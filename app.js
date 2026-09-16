@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDownloadButtons();
   initEditModal();
   initPasswordModal();
+  initDeleteAllModal();
   
   // 데이터 불러오기
   loadStudentsData();
@@ -448,27 +449,8 @@ function initTeacherControls() {
   document.getElementById('refreshDataBtn').addEventListener('click', () => {
     loadStudentsData();
   });
-
-  // 전체 초기화 버튼
-  document.getElementById('clearAllDataBtn').addEventListener('click', () => {
-    if (confirm("정말 모든 학생 데이터를 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
-      state.students = [];
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-      if (db) {
-        db.collection(COLLECTION_NAME).get().then(snapshot => {
-          const batch = db.batch();
-          snapshot.forEach(doc => batch.delete(doc.ref));
-          return batch.commit();
-        }).catch(err => console.warn("Firestore 삭제 오류:", err));
-      }
-      renderSpreadsheet();
-      updateTeacherDashboard();
-      updateSubmittedNumberBadges();
-      alert("데이터가 모두 초기화되었습니다.");
-    }
-  });
-
 }
+
 
 /**
  * 스크린샷과 정확히 동일한 형식의 엔트리 스프레드시트 렌더링
@@ -861,6 +843,64 @@ function openPasswordModal() {
   errorMsg.classList.add('hidden');
   modal.classList.remove('hidden');
   setTimeout(() => passwordInput.focus(), 120);
+}
+
+// ------------------------------------------------------------------
+// 11-3. 전체 데이터 삭제 메뉴 & 안전 확인 모달 처리
+// ------------------------------------------------------------------
+function initDeleteAllModal() {
+  const modal = document.getElementById('deleteConfirmModal');
+  const openBannerBtn = document.getElementById('clearAllDataBtn');
+  const openTableBtn = document.getElementById('tableDeleteAllBtn');
+  const closeBtn = document.getElementById('closeDeleteConfirmModalBtn');
+  const cancelBtn = document.getElementById('cancelDeleteAllBtn');
+  const confirmBtn = document.getElementById('confirmDeleteAllBtn');
+
+  if (!modal) return;
+
+  function openModal() {
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    modal.classList.add('hidden');
+  }
+
+  if (openBannerBtn) openBannerBtn.addEventListener('click', openModal);
+  if (openTableBtn) openTableBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async () => {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = '삭제 중...';
+
+      state.students = [];
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+
+      if (db) {
+        try {
+          const snapshot = await db.collection(COLLECTION_NAME).get();
+          if (!snapshot.empty) {
+            const batch = db.batch();
+            snapshot.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+          }
+        } catch (err) {
+          console.warn("Firestore 전체 삭제 오류:", err);
+        }
+      }
+
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = '네, 모두 삭제합니다';
+      closeModal();
+      renderSpreadsheet();
+      updateTeacherDashboard();
+      updateSubmittedNumberBadges();
+      alert("✅ 모든 학생 관심사 데이터가 완전히 삭제되었습니다.\n이제 새로운 설문 데이터를 수집할 수 있습니다.");
+    });
+  }
 }
 
 // ------------------------------------------------------------------

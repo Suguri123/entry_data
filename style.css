@@ -782,12 +782,25 @@ body {
   color: #334155;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 .btn-mini-tool:hover {
   background: #e2e8f0;
 }
 
+.btn-mini-tool.danger-tool {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+  margin-left: 6px;
+}
+.btn-mini-tool.danger-tool:hover {
+  background: #fecaca;
+  color: #991b1b;
+}
+
 .viewer-caption {
+
   font-size: 0.86rem;
   color: #64748b;
   margin-bottom: 1rem;
@@ -1114,6 +1127,30 @@ body {
 .password-error-msg.hidden {
   display: none;
 }
+
+.btn-modal.danger {
+  background: #dc2626;
+  color: white;
+}
+.btn-modal.danger:hover {
+  background: #b91c1c;
+}
+
+.danger-header {
+  background: #fef2f2 !important;
+  border-bottom: 1px solid #fee2e2 !important;
+}
+
+.danger-header h3 {
+  color: #b91c1c !important;
+}
+
+.delete-modal-desc {
+  font-size: 0.98rem;
+  color: #334155;
+  line-height: 1.6;
+}
+
 
 
 /* ============================================================
