@@ -284,7 +284,7 @@ function initFormHandler() {
     });
   }
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const numVal = parseInt(document.getElementById('studentNumInput').value, 10);
@@ -316,93 +316,101 @@ function initFormHandler() {
       timestamp: new Date().toISOString()
     };
 
-    // 제출 버튼 로딩 상태 표시
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>⏳ 안전하게 저장하는 중...</span>';
-    }
+    try {
+      // 1. 로컬 데이터 목록 업데이트 (중복 번호 수정 또는 추가)
+      const existingIndex = state.students.findIndex(s => s.num === numVal);
+      if (existingIndex >= 0) {
+        state.students[existingIndex] = newStudent;
+      } else {
+        state.students.push(newStudent);
+      }
+      // 번호순 오름차순 정렬
+      state.students.sort((a, b) => a.num - b.num);
 
-    // 로컬 데이터 목록 업데이트 (중복 번호 수정 또는 추가)
-    const existingIndex = state.students.findIndex(s => s.num === numVal);
-    if (existingIndex >= 0) {
-      state.students[existingIndex] = newStudent;
-    } else {
-      state.students.push(newStudent);
-    }
-    // 번호순 오름차순 정렬
-    state.students.sort((a, b) => a.num - b.num);
+      // 2. 로컬스토리지 즉시 안전 저장
+      saveToLocalStorage();
 
-    // 로컬스토리지 저장
-    saveToLocalStorage();
+      // 3. UI 즉시 새로고침 (출석번호 체크마크, 대시보드)
+      updateTeacherDashboard();
+      updateSubmittedNumberBadges();
 
-    // Firebase 연동 (가능한 경우)
-    if (db) {
-      try {
-        await db.collection(COLLECTION_NAME).doc(`student_${numVal}`).set(newStudent);
-      } catch (err) {
-        console.warn("Firestore 저장 실패 (로컬스토리지에는 안전하게 저장됨):", err);
+      // 4. 클라우드 Firebase 실시간 동기화 (백그라운드 비동기 처리: 네트워크 지연이나 설정 지연으로 화면이 멈추지 않음)
+      if (db) {
+        db.collection(COLLECTION_NAME).doc(`student_${numVal}`).set(newStudent)
+          .then(() => console.log(`Firebase ${numVal}번 저장 완료`))
+          .catch(err => console.warn("Firestore 저장 실패 (로컬에는 안전하게 저장됨):", err));
+      }
+
+      // 5. 제출 완료 축하 화면 즉시 표시
+      showSubmissionSuccess(newStudent);
+
+    } catch (err) {
+      console.error("제출 처리 중 오류 발생:", err);
+      showStatusMsg(statusMsg, '제출 처리 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+    } finally {
+      // 제출 버튼 원상복구
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>✨ 내 답 제출하기! ✨</span>';
       }
     }
-
-    // UI 새로고침
-    updateTeacherDashboard();
-    updateSubmittedNumberBadges();
-
-    // 제출 버튼 복구
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<span>✨ 내 답 제출하기! ✨</span>';
-    }
-
-    // 제출 완료 확인 카드 띄우기
-    showSubmissionSuccess(newStudent);
   });
 }
 
 function showSubmissionSuccess(student) {
-  const form = document.getElementById('surveyForm');
-  const successCard = document.getElementById('submitSuccessCard');
-  if (!successCard) return;
+  try {
+    const form = document.getElementById('surveyForm');
+    const successCard = document.getElementById('submitSuccessCard');
+    if (!successCard || !form) return;
 
-  const titleEl = document.getElementById('successCardTitle');
-  if (titleEl) {
-    titleEl.textContent = `🎉 ${student.num}번 친구, 답변이 잘 제출되었어요!`;
-  }
-  document.getElementById('sumNum').textContent = `${student.num}번`;
-  document.getElementById('sumColor').textContent = student.color;
-  document.getElementById('sumSubject').textContent = student.subject;
-  document.getElementById('sumAnimal').textContent = student.animal;
-  document.getElementById('sumFood').textContent = student.food || '-';
-  document.getElementById('sumHobby').textContent = student.hobby || '-';
+    const titleEl = document.getElementById('successCardTitle');
+    if (titleEl) {
+      titleEl.textContent = `🎉 ${student.num}번 친구, 답변이 잘 제출되었어요!`;
+    }
+    const setSafeText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
 
-  form.classList.add('hidden');
-  successCard.classList.remove('hidden');
+    setSafeText('sumNum', `${student.num}번`);
+    setSafeText('sumColor', student.color);
+    setSafeText('sumSubject', student.subject);
+    setSafeText('sumAnimal', student.animal);
+    setSafeText('sumFood', student.food || '-');
+    setSafeText('sumHobby', student.hobby || '-');
 
-  // 축하 꽃가루 효과 (풍성하게 2연타 발사)
-  if (window.confetti) {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-    setTimeout(() => {
+    form.classList.add('hidden');
+    successCard.classList.remove('hidden');
+
+    // 축하 꽃가루 폭죽 효과 (풍성하게 2연타 발사)
+    if (window.confetti) {
       confetti({
-        particleCount: 60,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 }
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
       });
-      confetti({
-        particleCount: 60,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 }
-      });
-    }, 250);
-  }
+      setTimeout(() => {
+        confetti({
+          particleCount: 60,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 60,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+      }, 250);
+    }
 
-  // 완료 카드로 부드럽게 스크롤
-  successCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // 완료 카드로 부드럽게 스크롤
+    successCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    console.error("showSubmissionSuccess 오류:", e);
+    alert(`🎉 ${student.num}번 친구의 답이 성공적으로 제출되었습니다!`);
+  }
 }
 
 function showStatusMsg(el, text, type) {
@@ -956,12 +964,17 @@ function initDeleteAllModal() {
 
       if (db) {
         try {
-          const snapshot = await db.collection(COLLECTION_NAME).get();
-          if (!snapshot.empty) {
-            const batch = db.batch();
-            snapshot.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-          }
+          await Promise.race([
+            (async () => {
+              const snapshot = await db.collection(COLLECTION_NAME).get();
+              if (!snapshot.empty) {
+                const batch = db.batch();
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+              }
+            })(),
+            new Promise(res => setTimeout(res, 2000))
+          ]);
         } catch (err) {
           console.warn("Firestore 전체 삭제 오류:", err);
         }
