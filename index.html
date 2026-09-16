@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏫 5학년 우리 반 관심사 데이터 수집소 | 엔트리(Entry) 연계</title>
+  
+  <!-- 웹폰트 (Jua, Noto Sans KR) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  
+  <!-- SheetJS (Excel .xlsx 생성 및 다운로드) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
+  <!-- Confetti (제출 축하 효과) -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- CSS 스타일 -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="app-header">
+    <div class="header-content">
+      <div class="header-brand">
+        <span class="brand-badge">초등 5학년 · 데이터 분석</span>
+        <h1 class="brand-title">📊 우리 반 관심사 데이터 모으기</h1>
+      </div>
+      <div class="header-nav">
+        <button type="button" id="tabStudentBtn" class="mode-tab-btn active">
+          ✏️ 학생 설문 참여
+        </button>
+        <button type="button" id="tabTeacherBtn" class="mode-tab-btn">
+          🔒 선생님 모드 & 엑셀 다운로드
+          <span id="responseCountBadge" class="count-badge">0명</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+
+    <!-- ============================================================ -->
+    <!-- [1] 학생 설문 참여 화면 -->
+    <!-- ============================================================ -->
+    <section id="studentSection" class="view-panel active">
+      <div class="intro-card">
+        <div class="intro-icon">🎈</div>
+        <div class="intro-text">
+          <h2>안녕, 5학년 친구들! 🖐️</h2>
+          <p>여러분이 좋아하는 색깔, 과목, 동물을 모아 <strong>엔트리(Entry) 데이터 분석</strong> 수업에 활용할 거예요. 여러분의 생각을 솔직하게 골라주세요!</p>
+        </div>
+      </div>
+
+      <form id="surveyForm" class="survey-form">
+        
+        <!-- STEP 1: 친구번호(출석번호) -->
+        <div class="form-step-card" id="stepNumber">
+          <div class="step-header">
+            <span class="step-num">1</span>
+            <div class="step-title-wrap">
+              <h3>내 번호(친구번호)를 선택해요</h3>
+              <p>출석번호를 누르거나 직접 숫자를 입력할 수 있어요.</p>
+            </div>
+          </div>
+          <div class="step-body">
+            <div class="quick-number-grid" id="quickNumberGrid">
+              <!-- 1~30번 버튼 JS 자동 생성 -->
+            </div>
+            <div class="custom-input-row">
+              <label for="studentNumInput">직접 입력 :</label>
+              <input type="number" id="studentNumInput" min="1" max="50" placeholder="예: 7" required>
+              <span class="unit-text">번</span>
+              <span id="numStatusText" class="status-tip"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: 좋아하는 색깔 -->
+        <div class="form-step-card" id="stepColor">
+          <div class="step-header">
+            <span class="step-num">2</span>
+            <div class="step-title-wrap">
+              <h3>🎨 내가 가장 좋아하는 <strong>색깔</strong>은 무엇인가요?</h3>
+              <p>마음에 드는 색깔 하나를 골라보세요!</p>
+            </div>
+          </div>
+          <div class="step-body">
+            <div class="chips-grid color-chips-grid" id="colorChipsGrid">
+              <!-- 색깔 칩 버튼들 -->
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="빨강" style="--chip-c: #ef4444;">
+                <span class="color-dot" style="background: #ef4444;"></span> 빨강
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="파랑" style="--chip-c: #3b82f6;">
+                <span class="color-dot" style="background: #3b82f6;"></span> 파랑
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="초록" style="--chip-c: #10b981;">
+                <span class="color-dot" style="background: #10b981;"></span> 초록
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="노랑" style="--chip-c: #f59e0b;">
+                <span class="color-dot" style="background: #f59e0b;"></span> 노랑
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="주황" style="--chip-c: #f97316;">
+                <span class="color-dot" style="background: #f97316;"></span> 주황
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="보라" style="--chip-c: #8b5cf6;">
+                <span class="color-dot" style="background: #8b5cf6;"></span> 보라
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="분홍" style="--chip-c: #ec4899;">
+                <span class="color-dot" style="background: #ec4899;"></span> 분홍
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="하늘" style="--chip-c: #06b6d4;">
+                <span class="color-dot" style="background: #06b6d4;"></span> 하늘
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="하양" style="--chip-c: #9ca3af;">
+                <span class="color-dot" style="background: #ffffff; border: 1px solid #cbd5e1;"></span> 하양
+              </button>
+              <button type="button" class="chip-btn color-chip" data-field="color" data-val="검정" style="--chip-c: #1f2937;">
+                <span class="color-dot" style="background: #1f2937;"></span> 검정
+              </button>
+            </div>
+            <div class="custom-input-row">
+              <label for="customColorInput">기타 색깔 직접 입력 :</label>
+              <input type="text" id="customColorInput" placeholder="예: 민트색, 연보라, 골드">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: 좋아하는 과목 -->
+        <div class="form-step-card" id="stepSubject">
+          <div class="step-header">
+            <span class="step-num">3</span>
+            <div class="step-title-wrap">
+              <h3>📚 내가 가장 좋아하는 <strong>과목</strong>은 무엇인가요?</h3>
+              <p>학교에서 가장 신나고 기다려지는 수업을 골라보세요!</p>
+            </div>
+          </div>
+          <div class="step-body">
+            <div class="chips-grid" id="subjectChipsGrid">
+              <button type="button" class="chip-btn" data-field="subject" data-val="체육">⚽ 체육</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="미술">🎨 미술</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="음악">🎵 음악</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="과학">🔬 과학</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="수학">📐 수학</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="실과">💻 실과(코딩)</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="사회">🌍 사회</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="국어">📖 국어</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="영어">🔤 영어</button>
+              <button type="button" class="chip-btn" data-field="subject" data-val="도덕">💡 도덕</button>
+            </div>
+            <div class="custom-input-row">
+              <label for="customSubjectInput">기타 과목 직접 입력 :</label>
+              <input type="text" id="customSubjectInput" placeholder="예: 창체, 동아리">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: 좋아하는 동물 -->
+        <div class="form-step-card" id="stepAnimal">
+          <div class="step-header">
+            <span class="step-num">4</span>
+            <div class="step-title-wrap">
+              <h3>🐶 내가 가장 좋아하는 <strong>동물</strong>은 무엇인가요?</h3>
+              <p>보기만 해도 귀엽거나 멋진 동물을 하나 선택해요!</p>
+            </div>
+          </div>
+          <div class="step-body">
+            <div class="chips-grid" id="animalChipsGrid">
+              <button type="button" class="chip-btn" data-field="animal" data-val="강아지">🐶 강아지</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="고양이">🐱 고양이</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="토끼">🐰 토끼</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="햄스터">🐹 햄스터</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="판다">🐼 판다</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="호랑이">🐯 호랑이</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="돌고래">🐬 돌고래</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="곰">🐻 곰</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="펭귄">🐧 펭귄</button>
+              <button type="button" class="chip-btn" data-field="animal" data-val="치타">🐆 치타</button>
+            </div>
+            <div class="custom-input-row">
+              <label for="customAnimalInput">기타 동물 직접 입력 :</label>
+              <input type="text" id="customAnimalInput" placeholder="예: 수달, 알파카, 사자">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5 (선택): 좋아하는 음식 & 여가활동 -->
+        <div class="form-step-card" id="stepMore">
+          <div class="step-header">
+            <span class="step-num">5</span>
+            <div class="step-title-wrap">
+              <h3>🍕 좋아하는 음식과 여가활동도 알려줄래요? (선택)</h3>
+              <p>친구들과 더 재미있게 데이터를 비교해볼 수 있어요.</p>
+            </div>
+          </div>
+          <div class="step-body">
+            <div class="sub-form-group">
+              <label class="sub-label">🍗 좋아하는 음식 :</label>
+              <div class="chips-grid small-chips" id="foodChipsGrid">
+                <button type="button" class="chip-btn" data-field="food" data-val="치킨">🍗 치킨</button>
+                <button type="button" class="chip-btn" data-field="food" data-val="피자">🍕 피자</button>
+                <button type="button" class="chip-btn" data-field="food" data-val="떡볶이">🥘 떡볶이</button>
+                <button type="button" class="chip-btn" data-field="food" data-val="마라탕">🍜 마라탕</button>
+                <button type="button" class="chip-btn" data-field="food" data-val="돈가스">🍱 돈가스</button>
+                <button type="button" class="chip-btn" data-field="food" data-val="라면">🍜 라면</button>
+                <button type="button" class="chip-btn" data-field="food" data-val="삼겹살">🥩 삼겹살</button>
+                <button type="button" class="chip-btn" data-field="food" data-val="초밥">🍣 초밥</button>
+              </div>
+              <input type="text" id="customFoodInput" class="compact-input" placeholder="기타 음식 직접 입력">
+            </div>
+
+            <div class="sub-form-group" style="margin-top: 20px;">
+              <label class="sub-label">🎮 쉬는 시간에 제일 좋아하는 활동 :</label>
+              <div class="chips-grid small-chips" id="hobbyChipsGrid">
+                <button type="button" class="chip-btn" data-field="hobby" data-val="게임">🎮 게임</button>
+                <button type="button" class="chip-btn" data-field="hobby" data-val="유튜브 시청">📱 유튜브</button>
+                <button type="button" class="chip-btn" data-field="hobby" data-val="축구/운동">⚽ 축구/운동</button>
+                <button type="button" class="chip-btn" data-field="hobby" data-val="그림그리기">🎨 그림그리기</button>
+                <button type="button" class="chip-btn" data-field="hobby" data-val="음악/춤">🎵 노래/춤</button>
+                <button type="button" class="chip-btn" data-field="hobby" data-val="만들기/블록">🧱 블록/만들기</button>
+                <button type="button" class="chip-btn" data-field="hobby" data-val="친구와 놀기">🤼 친구와 놀기</button>
+                <button type="button" class="chip-btn" data-field="hobby" data-val="웹툰/독서">📖 웹툰/독서</button>
+              </div>
+              <input type="text" id="customHobbyInput" class="compact-input" placeholder="기타 취미 직접 입력">
+            </div>
+          </div>
+        </div>
+
+        <!-- 제출 버튼 -->
+        <div class="submit-wrap">
+          <button type="submit" id="submitBtn" class="primary-submit-btn">
+            <span>✨ 내 답 제출하기! ✨</span>
+          </button>
+          <p id="formStatusMsg" class="form-status-msg"></p>
+        </div>
+
+      </form>
+    </section>
+
+
+    <!-- ============================================================ -->
+    <!-- [2] 선생님 모드 & 데이터 관리 / 엑셀 다운로드 화면 -->
+    <!-- ============================================================ -->
+    <section id="teacherSection" class="view-panel hidden">
+      
+      <!-- 상단 컨트롤 배너 -->
+      <div class="teacher-banner">
+        <div class="banner-title-area">
+          <span class="badge-teacher">선생님 전용 관리함</span>
+          <h2>📋 5학년 관심사 수집 현황 & 엑셀 내보내기</h2>
+          <p>수집된 학생 데이터를 엔트리(Entry) 데이터 분석 테이블 양식에 맞춰 바로 엑셀(.xlsx) 또는 CSV로 다운로드합니다.</p>
+        </div>
+        <div class="banner-actions">
+          <button type="button" id="loadSampleDataBtn" class="btn-action sample-btn" title="학생들이 아직 없을 때 시연용 25명 데이터 생성">
+            🎲 25명 샘플 데이터 채우기
+          </button>
+          <button type="button" id="refreshDataBtn" class="btn-action refresh-btn">
+            🔄 새로고침
+          </button>
+          <button type="button" id="clearAllDataBtn" class="btn-action danger-btn">
+            🗑️ 전체 초기화
+          </button>
+          <button type="button" id="lockTeacherBtn" class="btn-action lock-btn" title="선생님 모드를 잠그고 학생 설문 화면으로 이동합니다">
+            🔒 잠금 &amp; 학생 화면
+          </button>
+        </div>
+      </div>
+
+      <!-- 요약 통계 카드 -->
+      <div class="stat-cards-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-data">
+            <span class="stat-label">총 제출 학생</span>
+            <span id="statTotalCount" class="stat-val">0명</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎨</div>
+          <div class="stat-data">
+            <span class="stat-label">가장 인기 색깔</span>
+            <span id="statTopColor" class="stat-val">-</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📚</div>
+          <div class="stat-data">
+            <span class="stat-label">가장 인기 과목</span>
+            <span id="statTopSubject" class="stat-val">-</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🐶</div>
+          <div class="stat-data">
+            <span class="stat-label">가장 인기 동물</span>
+            <span id="statTopAnimal" class="stat-val">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 엑셀 다운로드 컨트롤 바: 하나의 파일에 전체 테이블 다운로드 -->
+      <div class="download-hub-card single-download-card">
+        <div class="single-download-content">
+          <div class="hub-title">
+            <span class="hub-icon">📥</span>
+            <div>
+              <h3>우리 반 관심사 전체 데이터 엑셀 다운로드</h3>
+              <p>수집된 모든 학생의 응답(<strong>친구번호, 색깔, 과목, 동물, 음식, 여가활동</strong>)이 <strong>하나의 전체 테이블</strong>로 깔끔하게 정리된 엑셀 파일입니다.</p>
+            </div>
+          </div>
+          <div class="single-download-actions">
+            <button type="button" class="btn-main-download" id="dlTotalExcelBtn">
+              <span>📊</span> 전체 데이터 엑셀(.xlsx) 다운로드
+            </button>
+            <button type="button" class="btn-sub-download" id="dlTotalCsvBtn">
+              <span>📄</span> 엔트리용 CSV 다운로드
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 엔트리 스타일 실시간 데이터 테이블 뷰어 (스크린샷 모양 완벽 재현) -->
+      <div class="entry-table-viewer-card">
+        
+        <div class="viewer-header">
+          <div class="viewer-title-wrap">
+            <h3>📋 실시간 관심사 전체 데이터 테이블</h3>
+            <span class="viewer-caption">💡 <strong>엔트리(Entry) 데이터 분석 테이블 화면과 동일한 형식</strong>(A, B, C... 열과 1, 2, 3... 행)입니다.</span>
+          </div>
+          
+          <div class="viewer-tools">
+            <button type="button" id="openAddModalBtn" class="btn-mini-tool">
+              ➕ 행 직접 추가
+            </button>
+          </div>
+        </div>
+
+
+        <!-- 스크린샷과 똑같은 스프레드시트 뷰 -->
+        <div class="spreadsheet-container">
+          <div class="table-scroll-wrap">
+            <table class="entry-spreadsheet" id="entrySpreadsheet">
+              <thead id="spreadsheetThead">
+                <!-- 동적 렌더링 -->
+              </thead>
+              <tbody id="spreadsheetTbody">
+                <!-- 동적 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+          <div id="tableEmptyNotice" class="table-empty-notice hidden">
+            아직 수집된 학생 데이터가 없습니다. 학생 화면에서 제출하거나 상단의 <strong>[🎲 25명 샘플 데이터 채우기]</strong>를 눌러보세요!
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 엔트리 연동 가이드 안내 카드 -->
+      <div class="guide-card">
+        <div class="guide-header">
+          <span class="guide-icon">💡</span>
+          <h3>다운로드한 파일을 엔트리(Entry)에서 사용하는 3단계 가이드</h3>
+        </div>
+        <div class="guide-steps-row">
+          <div class="guide-step">
+            <div class="guide-step-badge">1단계</div>
+            <h4>엑셀 또는 CSV 다운로드</h4>
+            <p>위 다운로드 센터에서 <strong>[친구번호 & 색깔 데이터 (.xlsx / .csv)]</strong>를 다운로드합니다.</p>
+          </div>
+          <div class="guide-arrow">➔</div>
+          <div class="guide-step">
+            <div class="guide-step-badge">2단계</div>
+            <h4>엔트리 테이블에 올리기</h4>
+            <p><a href="https://playentry.org" target="_blank" rel="noopener">playentry.org</a> 만들기 화면 좌측 <strong>[데이터 분석] &gt; [테이블 추가] &gt; [파일 올리기]</strong>를 클릭해 파일을 업로드합니다.</p>
+          </div>
+          <div class="guide-arrow">➔</div>
+          <div class="guide-step">
+            <div class="guide-step-badge">3단계</div>
+            <h4>차트 및 코딩 실습</h4>
+            <p>엔트리 테이블 탭에서 <strong>[차트(막대/원)]</strong>를 눌러 시각화하거나, 블록 코딩으로 데이터 분석 프로그램을 완성합니다!</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 데이터 직접 추가 / 수정 모달 -->
+  <div id="editDataModal" class="modal-backdrop hidden">
+    <div class="modal-window">
+      <div class="modal-title-bar">
+        <h3 id="editModalTitle">✏️ 학생 데이터 입력/수정</h3>
+        <button type="button" id="closeEditModalBtn" class="btn-close-modal">&times;</button>
+      </div>
+      <form id="editDataForm" class="modal-form">
+        <div class="modal-input-group">
+          <label for="editNumInput">친구번호 (출석번호) *</label>
+          <input type="number" id="editNumInput" min="1" max="100" required>
+        </div>
+        <div class="modal-input-group">
+          <label for="editColorInput">색깔 *</label>
+          <input type="text" id="editColorInput" placeholder="예: 빨강, 파랑, 초록, 노랑" required>
+        </div>
+        <div class="modal-input-group">
+          <label for="editSubjectInput">좋아하는 과목</label>
+          <input type="text" id="editSubjectInput" placeholder="예: 체육, 미술, 과학, 수학">
+        </div>
+        <div class="modal-input-group">
+          <label for="editAnimalInput">좋아하는 동물</label>
+          <input type="text" id="editAnimalInput" placeholder="예: 강아지, 고양이, 햄스터">
+        </div>
+        <div class="modal-input-group">
+          <label for="editFoodInput">좋아하는 음식</label>
+          <input type="text" id="editFoodInput" placeholder="예: 치킨, 피자, 떡볶이">
+        </div>
+        <div class="modal-input-group">
+          <label for="editHobbyInput">좋아하는 여가활동</label>
+          <input type="text" id="editHobbyInput" placeholder="예: 게임, 유튜브, 축구">
+        </div>
+        <div class="modal-buttons">
+          <button type="button" id="cancelEditBtn" class="btn-modal secondary">취소</button>
+          <button type="submit" id="saveEditBtn" class="btn-modal primary">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 선생님 모드 비밀번호 확인 모달 -->
+  <div id="passwordModal" class="modal-backdrop hidden">
+    <div class="modal-window password-modal-card">
+      <div class="modal-title-bar">
+        <h3>🔒 선생님 모드 비밀번호 확인</h3>
+        <button type="button" id="closePasswordModalBtn" class="btn-close-modal">&times;</button>
+      </div>
+      <form id="passwordForm" class="modal-form">
+        <p class="password-desc">선생님 전용 관리함 및 엑셀 다운로드 페이지에 접속하려면 <strong>비밀번호 4자리</strong>를 입력해주세요.</p>
+        <div class="modal-input-group">
+          <label for="adminPasswordInput">비밀번호</label>
+          <input type="password" id="adminPasswordInput" placeholder="비밀번호 4자리 입력" maxlength="10" autocomplete="off" required>
+        </div>
+        <p id="passwordErrorMsg" class="password-error-msg hidden">⚠️ 비밀번호가 올바르지 않습니다. 다시 입력해주세요.</p>
+        <div class="modal-buttons">
+          <button type="button" id="cancelPasswordBtn" class="btn-modal secondary">취소</button>
+          <button type="submit" id="confirmPasswordBtn" class="btn-modal primary">확인</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- Firebase SDK (Firestore 실시간 저장) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- 메인 애플리케이션 스크립트 -->
+  <script src="app.js"></script>
+</body>
+</html>
