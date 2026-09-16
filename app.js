@@ -7,14 +7,15 @@
 // 1. Firebase Firestore 연동 설정
 // ------------------------------------------------------------------
 const firebaseConfig = {
-  apiKey: "AIzaSyBeW8qvSgI2R_gMCFa3ZH90qQ0-D9Ve-VE",
-  authDomain: "question20260907.firebaseapp.com",
-  projectId: "question20260907",
-  storageBucket: "question20260907.firebasestorage.app",
-  messagingSenderId: "725622181820",
-  appId: "1:725622181820:web:4a45d45b591ba7ffede5b9",
-  measurementId: "G-XNJ280XSEP"
+  apiKey: "AIzaSyDo6A9CRBu5l7zpFpMyNM6YJB4f-BSif1c",
+  authDomain: "entry-data-422e6.firebaseapp.com",
+  projectId: "entry-data-422e6",
+  storageBucket: "entry-data-422e6.firebasestorage.app",
+  messagingSenderId: "345763157045",
+  appId: "1:345763157045:web:a778bdb50d1088d24d0d7c",
+  measurementId: "G-RHY5C91EP4"
 };
+
 
 let db = null;
 if (typeof firebase !== 'undefined' && firebase.initializeApp) {
