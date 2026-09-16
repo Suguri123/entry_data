@@ -453,12 +453,20 @@ function initTeacherControls() {
     if (confirm("정말 모든 학생 데이터를 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
       state.students = [];
       localStorage.removeItem(LOCAL_STORAGE_KEY);
+      if (db) {
+        db.collection(COLLECTION_NAME).get().then(snapshot => {
+          const batch = db.batch();
+          snapshot.forEach(doc => batch.delete(doc.ref));
+          return batch.commit();
+        }).catch(err => console.warn("Firestore 삭제 오류:", err));
+      }
       renderSpreadsheet();
       updateTeacherDashboard();
       updateSubmittedNumberBadges();
       alert("데이터가 모두 초기화되었습니다.");
     }
   });
+
 }
 
 /**

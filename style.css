@@ -63,6 +63,14 @@ body {
   gap: 1rem;
 }
 
+.brand-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
 .brand-badge {
   display: inline-block;
   background: rgba(255, 255, 255, 0.2);
@@ -71,8 +79,19 @@ body {
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 20px;
-  margin-bottom: 4px;
 }
+
+.db-status-badge {
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.25);
+  color: #a7f3d0;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
 
 .brand-title {
   font-family: 'Jua', sans-serif;
