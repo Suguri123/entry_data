@@ -57,6 +57,62 @@
         </div>
       </div>
 
+      <!-- 제출 완료 축하 & 결과 확인 카드 (제출 시 표시됨) -->
+      <div id="submitSuccessCard" class="submit-success-card hidden">
+        <div class="success-card-top">
+          <div class="success-icon-badge">🎉</div>
+          <div class="success-text-content">
+            <span class="success-status-pill">✅ 제출 완료!</span>
+            <h2 id="successCardTitle">답변이 잘 제출되었어요!</h2>
+            <p>선생님의 <strong>엔트리(Entry) 데이터 분석 테이블</strong>에 내 답변이 안전하게 기록되었어요. 멋져요! 👍</p>
+          </div>
+        </div>
+
+        <div class="success-summary-box">
+          <h4 class="summary-box-title">📋 내가 제출한 관심사 확인</h4>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="sum-label">내 번호</span>
+              <span class="sum-val number-highlight" id="sumNum">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="sum-label">🎨 색깔</span>
+              <span class="sum-val" id="sumColor">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="sum-label">📚 과목</span>
+              <span class="sum-val" id="sumSubject">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="sum-label">🐶 동물</span>
+              <span class="sum-val" id="sumAnimal">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="sum-label">🍕 음식</span>
+              <span class="sum-val" id="sumFood">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="sum-label">🎮 여가활동</span>
+              <span class="sum-val" id="sumHobby">-</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="success-notice-badge">
+          <span>💡</span>
+          <span>출석번호 표에서 내 번호에 <strong>초록색 체크(✓)</strong>가 생겼는지 확인해보세요!</span>
+        </div>
+
+        <div class="success-actions">
+          <button type="button" id="editMySubmissionBtn" class="btn-success-action secondary">
+            ✏️ 답변 수정하기
+          </button>
+          <button type="button" id="newSubmissionBtn" class="btn-success-action primary">
+            ✨ 다른 번호(친구) 설문하기
+          </button>
+        </div>
+      </div>
+
       <form id="surveyForm" class="survey-form">
         
         <!-- STEP 1: 친구번호(출석번호) -->
@@ -69,6 +125,10 @@
             </div>
           </div>
           <div class="step-body">
+            <div class="number-grid-legend">
+              <span class="legend-item"><span class="legend-dot green">✓</span> 초록색은 제출 완료된 번호</span>
+              <span class="legend-item"><span class="legend-dot default"></span> 흰색은 아직 제출하지 않은 번호</span>
+            </div>
             <div class="quick-number-grid" id="quickNumberGrid">
               <!-- 1~30번 버튼 JS 자동 생성 -->
             </div>

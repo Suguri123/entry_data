@@ -154,10 +154,12 @@ function checkExistingSubmission(num) {
   const numStatusText = document.getElementById('numStatusText');
   const existing = state.students.find(s => s.num === num);
   if (existing) {
-    numStatusText.textContent = `💡 ${num}번 친구는 이미 제출한 적이 있어요. 다시 제출하면 최신 답변으로 수정돼요!`;
+    numStatusText.className = 'status-tip submitted';
+    numStatusText.innerHTML = `✅ <strong>${num}번</strong> 친구는 이미 제출을 완료했어요! (선택을 바꾸면 새 답변으로 수정돼요)`;
     // 기존 입력값 자동 채우기 안내
     prefillStudentForm(existing);
   } else {
+    numStatusText.className = 'status-tip';
     numStatusText.textContent = '';
   }
 }
@@ -254,11 +256,33 @@ function bindCustomInput(inputId, field) {
 }
 
 // ------------------------------------------------------------------
-// 7. 학생 설문 제출 처리
+// 7. 학생 설문 제출 처리 & 완료 화면 표시
 // ------------------------------------------------------------------
 function initFormHandler() {
   const form = document.getElementById('surveyForm');
   const statusMsg = document.getElementById('formStatusMsg');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // 완료 카드 버튼: 답변 수정하기
+  const editMyBtn = document.getElementById('editMySubmissionBtn');
+  if (editMyBtn) {
+    editMyBtn.addEventListener('click', () => {
+      document.getElementById('submitSuccessCard').classList.add('hidden');
+      form.classList.remove('hidden');
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  // 완료 카드 버튼: 다른 번호(친구) 설문하기
+  const newSubBtn = document.getElementById('newSubmissionBtn');
+  if (newSubBtn) {
+    newSubBtn.addEventListener('click', () => {
+      document.getElementById('submitSuccessCard').classList.add('hidden');
+      form.classList.remove('hidden');
+      resetStudentForm();
+      document.getElementById('stepNumber').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -292,6 +316,12 @@ function initFormHandler() {
       timestamp: new Date().toISOString()
     };
 
+    // 제출 버튼 로딩 상태 표시
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>⏳ 안전하게 저장하는 중...</span>';
+    }
+
     // 로컬 데이터 목록 업데이트 (중복 번호 수정 또는 추가)
     const existingIndex = state.students.findIndex(s => s.num === numVal);
     if (existingIndex >= 0) {
@@ -314,26 +344,65 @@ function initFormHandler() {
       }
     }
 
-    // 축하 꽃가루 효과
-    if (window.confetti) {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.7 }
-      });
-    }
-
-    showStatusMsg(statusMsg, `🎉 ${numVal}번 친구의 답이 성공적으로 제출되었습니다! 엔트리 테이블에서 확인해보세요.`, 'success');
-
     // UI 새로고침
     updateTeacherDashboard();
     updateSubmittedNumberBadges();
 
-    // 폼 초기화 (선택적)
-    setTimeout(() => {
-      resetStudentForm();
-    }, 2500);
+    // 제출 버튼 복구
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>✨ 내 답 제출하기! ✨</span>';
+    }
+
+    // 제출 완료 확인 카드 띄우기
+    showSubmissionSuccess(newStudent);
   });
+}
+
+function showSubmissionSuccess(student) {
+  const form = document.getElementById('surveyForm');
+  const successCard = document.getElementById('submitSuccessCard');
+  if (!successCard) return;
+
+  const titleEl = document.getElementById('successCardTitle');
+  if (titleEl) {
+    titleEl.textContent = `🎉 ${student.num}번 친구, 답변이 잘 제출되었어요!`;
+  }
+  document.getElementById('sumNum').textContent = `${student.num}번`;
+  document.getElementById('sumColor').textContent = student.color;
+  document.getElementById('sumSubject').textContent = student.subject;
+  document.getElementById('sumAnimal').textContent = student.animal;
+  document.getElementById('sumFood').textContent = student.food || '-';
+  document.getElementById('sumHobby').textContent = student.hobby || '-';
+
+  form.classList.add('hidden');
+  successCard.classList.remove('hidden');
+
+  // 축하 꽃가루 효과 (풍성하게 2연타 발사)
+  if (window.confetti) {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+    setTimeout(() => {
+      confetti({
+        particleCount: 60,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 }
+      });
+      confetti({
+        particleCount: 60,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 }
+      });
+    }, 250);
+  }
+
+  // 완료 카드로 부드럽게 스크롤
+  successCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function showStatusMsg(el, text, type) {
@@ -346,7 +415,11 @@ function resetStudentForm() {
   state.selectedForm = { num: '', color: '', subject: '', animal: '', food: '', hobby: '' };
   highlightSelectedNumber(null);
   document.querySelectorAll('.chip-btn').forEach(c => c.classList.remove('selected'));
-  document.getElementById('numStatusText').textContent = '';
+  const numStatusText = document.getElementById('numStatusText');
+  if (numStatusText) {
+    numStatusText.className = 'status-tip';
+    numStatusText.textContent = '';
+  }
   document.getElementById('formStatusMsg').textContent = '';
 }
 
@@ -620,8 +693,10 @@ function updateSubmittedNumberBadges() {
     const num = parseInt(btn.dataset.num, 10);
     if (submittedNumbers.has(num)) {
       btn.classList.add('has-data');
+      btn.setAttribute('title', `${num}번: 이미 제출 완료됨 (클릭하여 수정 가능)`);
     } else {
       btn.classList.remove('has-data');
+      btn.setAttribute('title', `${num}번 (미제출)`);
     }
   });
 }
